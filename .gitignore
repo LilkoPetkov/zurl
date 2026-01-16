@@ -1,6 +1,7 @@
 .zig-cache
 
 zep-out
+zig-out
 
 .zep
 !.zep/injector.zig
