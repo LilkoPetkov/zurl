@@ -1,0 +1,8 @@
+.{
+    .name = .zurl,
+    .version = "0.0.1",
+    .fingerprint = 0x2ef103584330f034,
+    .minimum_zig_version = "0.15.1",
+    .dependencies = .{},
+    .paths = .{""},
+}

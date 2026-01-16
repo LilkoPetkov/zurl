@@ -1,0 +1,20 @@
+{
+  "author": "",
+  "tags": [],
+  "zig_version": "0.15.1",
+  "repo": "",
+  "name": "",
+  "cmd": [],
+  "description": "",
+  "version": "0.0.1",
+  "license": "",
+  "packages": [
+    "clap@0.11.0",
+    "mvzr@0.3.7"
+  ],
+  "dev_packages": [],
+  "build": {
+    "entry": "src/main.zig",
+    "target": "x86_64-linux"
+  }
+}
