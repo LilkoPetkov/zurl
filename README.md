@@ -1,6 +1,6 @@
 # Zig HTTP CLI - zurl
 
-Welcome to `zurl`! This project provides a lightweight, fast, and easy-to-use command-line tool for making HTTP requests, crafted with the power and simplicity of Zig. Think of it as a minimalistic, modern alternative to `curl` for your everyday web interaction needs. Whether you're testing an API, downloading content, or just peeking at some web headers, `zurl` aims to be your trusty companion.
+This project provides a lightweight, fast, and easy-to-use command-line tool for making HTTP requests, crafted with the power and simplicity of Zig. 
 
 ## Building
 
