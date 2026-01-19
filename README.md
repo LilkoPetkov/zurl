@@ -1,6 +1,6 @@
 # Zig HTTP CLI - zurl
 
-This project provides a lightweight, fast, and easy-to-use command-line tool for making HTTP requests, crafted with the power and simplicity of Zig. 
+This project provides a lightweight, fast, and easy-to-use command-line tool for making HTTP requests.
 
 ## Building
 

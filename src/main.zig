@@ -41,7 +41,7 @@ const httpRequest = struct {
     /// any.
     ///Includes decompression of the response
     ///
-    /// TODO: Fix issue with redirect behaviour, when there is a redirect to
+    /// TODO: Fix issue with redirect behaviour, where HTTP redirects to
     /// HTTPS, resulting in TooManyRedirects or TlsNotInitialised
     fn makeHttpRequest(self: *@This()) !void {
         self.setupClient();
@@ -68,7 +68,10 @@ const httpRequest = struct {
 
         switch (self.headers_only) {
             true => {
-                print("{s}\n", .{response.head.bytes});
+                const buf = try self.allocator.dupe(u8, response.head.bytes);
+                defer self.allocator.free(buf);
+
+                try self.writeToStdout(buf);
             },
             false => {
                 const decompress_buffer: []u8 = switch (response.head.content_encoding) {
@@ -90,9 +93,23 @@ const httpRequest = struct {
                 };
                 const buf = self.response_writer.written();
 
-                print("{s}\n", .{buf});
+                try self.writeToStdout(buf);
             },
         }
+    }
+
+    /// Write message from 'buf' to stdout. Message is freed and flushed after
+    /// print, but buffer is not. The owner is responsible for freeing the memory
+    /// if buf is allocated from heap
+    fn writeToStdout(self: *@This(), buf: []u8) !void {
+        const stdout_buf = try self.allocator.alloc(u8, buf.len);
+        defer self.allocator.free(stdout_buf);
+
+        var stdout_writer = std.fs.File.stdout().writer(stdout_buf);
+        const stdout = &stdout_writer.interface;
+
+        try stdout.print("{s}\n", .{buf});
+        try stdout.flush();
     }
 
     /// Freeing headers after use along with the ArrayList that owns them
