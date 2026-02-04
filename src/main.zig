@@ -53,7 +53,7 @@ const httpRequest = struct {
         defer self.freeHeaders(&headers_array);
 
         const opts: std.http.Client.RequestOptions = .{
-            .redirect_behavior = std.http.Client.Request.RedirectBehavior.init(0),
+            .redirect_behavior = std.http.Client.Request.RedirectBehavior.unhandled,
             .extra_headers = headers_array.items,
         };
 
