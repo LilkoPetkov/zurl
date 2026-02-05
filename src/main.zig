@@ -25,6 +25,7 @@ const httpRequest = struct {
     client: std.http.Client = undefined,
     headers_only: bool,
     headers: ?[]const u8,
+    payload: ?[]const u8,
 
     /// Setup Io Writer for the response body
     fn setupWriter(self: *@This()) void {
@@ -40,9 +41,6 @@ const httpRequest = struct {
     /// described method (GET, POST, PATCH, etc) and passed headers, if
     /// any.
     ///Includes decompression of the response
-    ///
-    /// TODO: Fix issue with redirect behaviour, where HTTP redirects to
-    /// HTTPS, resulting in TooManyRedirects or TlsNotInitialised
     fn makeHttpRequest(self: *@This()) !void {
         self.setupClient();
         self.setupWriter();
@@ -59,7 +57,16 @@ const httpRequest = struct {
 
         var req = try self.client.request(self.method, self.uri, opts);
         defer req.deinit();
-        try req.sendBodiless();
+
+        if (self.payload) |p| {
+            req.transfer_encoding = .{ .content_length = p.len };
+            var body = try req.sendBodyUnflushed(&.{});
+            try body.writer.writeAll(p);
+            try body.end();
+            try req.connection.?.flush();
+        } else {
+            try req.sendBodiless();
+        }
 
         const redirect_buffer = try self.allocator.alloc(u8, 8 * 1024);
         defer self.allocator.free(redirect_buffer);
@@ -159,7 +166,8 @@ pub fn httpRequestCommand(allocator: Allocator) !void {
         \\-u, --url             Target URL for the HTTP request <str>
         \\-m,  --method         HTTP method for the request <str>
         \\-I,  --headers_only   Returns response headers only <bool>
-        \\-H,  --headers       Add custom headers (comma separated - key,value) <str>
+        \\-H,  --headers        Add custom headers (comma separated - key,value) <str>
+        \\-d,  --payload        Body payload for the request <str>
         \\
     );
     const params = [_]clap.Param(u8){
@@ -188,12 +196,18 @@ pub fn httpRequestCommand(allocator: Allocator) !void {
             .names = .{ .short = 'H', .long = "headers" },
             .takes_value = .one,
         },
+        .{
+            .id = 'd',
+            .names = .{ .short = 'd', .long = "payload" },
+            .takes_value = .one,
+        },
     };
 
     var url: ?[]const u8 = null;
     var method: std.http.Method = .GET;
     var headers_only: bool = false;
     var headers: ?[]const u8 = null;
+    var payload: ?[]const u8 = null;
     var uri: std.Uri = undefined;
 
     var iter = try std.process.ArgIterator.initWithAllocator(allocator);
@@ -230,6 +244,7 @@ pub fn httpRequestCommand(allocator: Allocator) !void {
                     return error.InvalidMethod;
                 };
             },
+            'd' => payload = arg.value.?,
             'I' => headers_only = true,
             'H' => headers = arg.value.?,
             else => return error.InvalidArg,
@@ -242,7 +257,18 @@ pub fn httpRequestCommand(allocator: Allocator) !void {
     if (headers != null and std.mem.eql(u8, std.mem.trim(u8, headers.?, " "), "")) {
         return error.EmptyHeaders;
     }
+    if (std.meta.eql(method, .GET) and payload != null) {
+        return error.InvalidGetMethodWithPayload;
+    }
 
-    var request = httpRequest{ .allocator = allocator, .uri = uri, .method = method, .url = url.?, .headers_only = headers_only, .headers = headers };
+    var request = httpRequest{
+        .allocator = allocator,
+        .uri = uri,
+        .method = method,
+        .url = url.?,
+        .headers_only = headers_only,
+        .headers = headers,
+        .payload = payload,
+    };
     try request.makeHttpRequest();
 }
