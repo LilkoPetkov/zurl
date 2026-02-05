@@ -36,6 +36,7 @@ This command will compile the application and place the `zurl` executable in the
 | `--method`     | `-m`  | The HTTP method for the request (e.g., `GET`, `POST`, `put`). Case-insensitive. Defaults to `GET` if omitted. | `<string>`    | No       |
 | `--headers_only`| `-I`  | If present, only the response headers will be printed.                                                        | `<boolean>`   | No       |
 | `--headers`    | `-H`  | Add custom headers as a comma-separated string (e.g., "key1,value1,key2,value2").                            | `<string>`    | No       |
+| `--payload`    | `-d`  | Body payload for the request.                                                                                 | `<string>`    | No       |
 
 
 ## Examples
@@ -56,4 +57,10 @@ To request a resource and only display the response headers:
 To send a POST request with custom `Content-Type` and `Authorization` headers (method can be lowercase):
 ```sh
 ./zig-out/bin/zurl -u https://api.example.com/items -m post -H "Content-Type,application/json,Authorization,Bearer-token"
+```
+
+### POST Request with Payload
+To send a POST request with a JSON payload:
+```sh
+./zig-out/bin/zurl -u https://api.example.com/data -m post -H "Content-Type,application/json" -d '{"key": "value"}'
 ```
