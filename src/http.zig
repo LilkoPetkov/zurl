@@ -18,7 +18,7 @@ pub const httpRequest = struct {
 
     /// Setup Io Writer for the response body
     pub fn setupWriter(self: *@This()) void {
-        self.response_writer = .{}.init(self.allocator);
+        self.response_writer = .init(self.allocator);
     }
 
     /// Setup HTTP client for the requests
