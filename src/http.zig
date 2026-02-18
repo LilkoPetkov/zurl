@@ -36,7 +36,7 @@ pub const httpRequest = struct {
         defer self.destroy();
 
         var headers_array: std.ArrayList(std.http.Header) = try .initCapacity(self.allocator, 8);
-        try self.processHeaders(&headers_array);
+        if (self.headers != null) try self.processHeaders(&headers_array);
         defer self.freeHeaders(&headers_array);
 
         const opts: std.http.Client.RequestOptions = .{
