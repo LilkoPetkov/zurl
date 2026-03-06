@@ -71,9 +71,8 @@ pub const httpRequest = struct {
             },
             false => {
                 const decompress_buffer: []u8 = switch (response.head.content_encoding) {
-                    .identity => &.{},
+                    .identity, .deflate, .gzip => &.{},
                     .zstd => try self.allocator.alloc(u8, std.compress.zstd.default_window_len),
-                    .deflate, .gzip => try self.allocator.alloc(u8, std.compress.flate.max_window_len + 32768),
                     .compress => return error.UnsupportedCompressionMethod,
                 };
                 defer self.allocator.free(decompress_buffer);
